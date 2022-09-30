@@ -5,13 +5,15 @@ pkgrel=1
 pkgdesc="A pacstrap frontend to install Arch Linux on Macs with T2 security chip"
 arch=('x86_64')
 license=('GPL2')
-depends=('arch-install-scripts', 'python')
+depends=('arch-install-scripts' 'python')
 makedepends=('git')
-source=("git+https://github.com/NoaHimesaka1873/t2strap.git")
+source=("src::git+https://github.com/NoaHimesaka1873/t2strap.git")
 sha256sums=('SKIP')
 
-build() {}
+build() {
+ echo "No build needed"
+}
 package() {
-    cd "$srcdir/$pkgname"
-    install -Dm755 t2strap"$pkgdir/usr/sbin/t2strap"
+    cd "$srcdir/src"
+    install -Dm755 t2strap "$pkgdir/usr/sbin/t2strap"
 }
