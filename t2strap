@@ -1,0 +1,63 @@
+#!/usr/bin/python
+
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyleft 2022 Noa Himesaka
+
+import argparse
+import sys
+import subprocess
+import requests
+
+kernel_list_url = "https://mirror.funami.tech/kernel_list.json"  # Downloads allowed kernel list from this URL
+r = requests.get(kernel_list_url)
+kernel_list = r.json()
+kernel_allowlist = kernel_list["accepted_args"]
+# packages we should omit because they are not needed or already will be installed
+denylist = [
+    "linux",
+    "linux-t2",
+    "linux-lts",
+    "linux-zen",
+    "linux-headers",
+    "linux-t2-headers",
+    "linux-lts-headers",
+    "linux-zen-headers",
+    "linux-xanmod-edge-t2",
+    "linux-xanmod-edge-t2-headers",
+    "apple-bcm-wifi-firmware",
+    "apple-t2-audio-config",
+]
+
+parser = argparse.ArgumentParser(
+    description="t2strap: a pacstrap frontend that makes it easier to install Arch Linux on a Mac with T2 security chip"
+)
+parser.add_argument("-k", "--kernel", help="kernel to use", default="default")
+parser.add_argument(
+    "packages", metavar="package", help="packages to install", nargs="+"
+)
+args = parser.parse_args()
+kernel = args.kernel
+if kernel not in kernel_allowlist:
+    print("Error: kernel not in allowlist")
+    sys.exit(1)
+kernel = kernel_list[kernel]
+cmdline = [x for x in args.packages if x not in denylist]
+cmdline.insert(0, "pacstrap")
+cmdline.append("apple-t2-audio-config")
+cmdline.append("apple-bcm-wifi-firmware")
+cmdline.append(kernel)
+cmdline.append(kernel + "-headers")
+print(cmdline)
+subprocess.run(cmdline, shell=False)
+# append t2linux package repositories to pacman.conf
+with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
+    f.write("""
+    [Redecorating-t2]
+	Server = https://github.com/Redecorating/archlinux-t2-packages/releases/download/packages
+	SigLevel = Optional TrustAll
+		
+	[arch-mact2]
+	Server = https://mirror.funami.tech/arch-mact2/os/x86_64
+	SigLevel = Never
+    """)
+
