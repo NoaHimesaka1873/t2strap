@@ -15,5 +15,5 @@ build() {
 }
 package() {
     cd "$srcdir/src"
-    install -Dm755 t2strap "$pkgdir/usr/sbin/t2strap"
+    install -Dm755 t2strap "$pkgdir/usr/bin/t2strap"
 }
