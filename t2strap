@@ -9,27 +9,18 @@ import subprocess
 import requests
 
 kernel_list_url = "https://mirror.funami.tech/kernel_list.json"  # Downloads allowed kernel list from this URL
+denylist_url = (
+    "https://mirror.funami.tech/denylist.json"  # Downloads denylist from this URL
+)
 r = requests.get(kernel_list_url)
 kernel_list = r.json()
 kernel_allowlist = kernel_list["accepted_args"]
 # packages we should omit because they are not needed or already will be installed
-denylist = [
-    "linux",
-    "linux-t2",
-    "linux-lts",
-    "linux-zen",
-    "linux-headers",
-    "linux-t2-headers",
-    "linux-lts-headers",
-    "linux-zen-headers",
-    "linux-xanmod-edge-t2",
-    "linux-xanmod-edge-t2-headers",
-    "apple-bcm-wifi-firmware",
-    "apple-t2-audio-config",
-]
-
+r = requests.get(denylist_url)
+denylist = r.json()
 parser = argparse.ArgumentParser(
-    description="t2strap: a pacstrap frontend that makes it easier to install Arch Linux on a Mac with T2 security chip"
+    description="t2strap: a pacstrap frontend that makes it easier to install Arch Linux on a Mac with T2 security chip",
+    epilog="Available kernels: " + ", ".join(kernel_allowlist),
 )
 parser.add_argument("-k", "--kernel", help="kernel to use", default="default")
 parser.add_argument(
@@ -47,17 +38,17 @@ cmdline.append("apple-t2-audio-config")
 cmdline.append("apple-bcm-wifi-firmware")
 cmdline.append(kernel)
 cmdline.append(kernel + "-headers")
-print(cmdline)
 subprocess.run(cmdline, shell=False)
 # append t2linux package repositories to pacman.conf
 with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
-    f.write("""
-    [Redecorating-t2]
-	Server = https://github.com/Redecorating/archlinux-t2-packages/releases/download/packages
-	SigLevel = Optional TrustAll
-		
-	[arch-mact2]
-	Server = https://mirror.funami.tech/arch-mact2/os/x86_64
-	SigLevel = Never
-    """)
+    f.write(
+        """
+[Redecorating-t2]
+Server = https://github.com/Redecorating/archlinux-t2-packages/releases/download/packages
+SigLevel = Optional TrustAll
 
+[arch-mact2]
+Server = https://mirror.funami.tech/arch-mact2/os/x86_64
+SigLevel = Never
+"""
+    )
