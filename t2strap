@@ -12,7 +12,9 @@ kernel_list_url = "https://mirror.funami.tech/kernel_list.json"  # Downloads all
 denylist_url = (
     "https://mirror.funami.tech/denylist.json"  # Downloads denylist from this URL
 )
-asklist_url = "https://mirror.funami.tech/asklist.json"  # Downloads asklist from this URL
+asklist_url = (
+    "https://mirror.funami.tech/asklist.json"  # Downloads asklist from this URL
+)
 r = requests.get(kernel_list_url)
 kernel_list = r.json()
 kernel_allowlist = kernel_list["accepted_args"]
@@ -39,7 +41,12 @@ kernel = kernel_list[kernel]
 cmdline = [x for x in args.packages if x not in denylist and x not in asklist]
 ask = [x for x in args.packages if x in asklist]
 for x in ask:
-    if input(f"Package \"{x}\" will not work on your Mac. Do you want to still install it? [y/N]: ").lower() == "y":
+    if (
+        input(
+            f'Package "{x}" will not work on your Mac. Do you want to still install it? [y/N]: '
+        ).lower()
+        == "y"
+    ):
         cmdline.append(x)
 cmdline.insert(0, "pacstrap")
 cmdline.append("apple-t2-audio-config")
