@@ -29,6 +29,8 @@ parser = argparse.ArgumentParser(
     epilog="Available kernels: " + ", ".join(kernel_allowlist),
 )
 parser.add_argument("-k", "--kernel", help="kernel to use", default="default")
+parser.add_argument("-v", "--verbose", help="be verbose", action="store_true")
+parser.add_argument("path", metavar="PATH", help="path to install to")
 parser.add_argument(
     "packages", metavar="package", help="packages to install", nargs="+"
 )
@@ -39,6 +41,7 @@ if kernel not in kernel_allowlist:
     sys.exit(1)
 kernel = kernel_list[kernel]
 cmdline = [x for x in args.packages if x not in denylist and x not in asklist]
+cmdline.insert(0, args.path)
 ask = [x for x in args.packages if x in asklist]
 for x in ask:
     if (
@@ -53,8 +56,12 @@ cmdline.append("apple-t2-audio-config")
 cmdline.append("apple-bcm-firmware")
 cmdline.append(kernel)
 cmdline.append(kernel + "-headers")
+if args.verbose:
+    print("Running command: " + " ".join(cmdline))
 subprocess.run(cmdline, shell=False)
 # append t2linux package repositories to pacman.conf
+if args.verbose:
+    print("Adding t2linux package repositories to pacman.conf")
 with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
     f.write(
         """
