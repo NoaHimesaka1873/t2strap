@@ -35,7 +35,7 @@ kernel = kernel_list[kernel]
 cmdline = [x for x in args.packages if x not in denylist]
 cmdline.insert(0, "pacstrap")
 cmdline.append("apple-t2-audio-config")
-cmdline.append("apple-bcm-wifi-firmware")
+cmdline.append("apple-bcm-firmware")
 cmdline.append(kernel)
 cmdline.append(kernel + "-headers")
 subprocess.run(cmdline, shell=False)
