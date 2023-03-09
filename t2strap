@@ -30,6 +30,9 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument("-k", "--kernel", help="kernel to use", default="default")
 parser.add_argument("-v", "--verbose", help="be verbose", action="store_true")
+parser.add_argument(
+    "-d", "--dry-run", help="dry run (don't actually install)", action="store_true"
+)
 parser.add_argument("path", metavar="PATH", help="path to install to")
 parser.add_argument(
     "packages", metavar="package", help="packages to install", nargs="+"
@@ -58,13 +61,19 @@ cmdline.append(kernel)
 cmdline.append(kernel + "-headers")
 if args.verbose:
     print("Running command: " + " ".join(cmdline))
-subprocess.run(cmdline, shell=False)
+    if args.dry_run:
+        print("Dry run, not actually running command")
+if not args.dry_run:
+    subprocess.run(cmdline, shell=False)
 # append t2linux package repositories to pacman.conf
 if args.verbose:
     print("Adding t2linux package repositories to pacman.conf")
-with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
-    f.write(
-        """
+    if args.dry_run:
+        print("Dry run, not actually running command")
+if not args.dry_run:
+    with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
+        f.write(
+            """
 [Redecorating-t2]
 Server = https://github.com/Redecorating/archlinux-t2-packages/releases/download/packages
 SigLevel = Optional TrustAll
@@ -73,4 +82,4 @@ SigLevel = Optional TrustAll
 Server = https://mirror.funami.tech/arch-mact2/os/x86_64
 SigLevel = Never
 """
-    )
+        )
