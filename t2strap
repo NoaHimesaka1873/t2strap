@@ -55,7 +55,7 @@ for x in ask:
     ):
         cmdline.append(x)
 cmdline.insert(0, "pacstrap")
-for pkg in ["apple-t2-audio-config", "apple-bcm-firmware", "touchbard", "t2fand", kernel, kernel + "-headers"]:
+for pkg in ["apple-t2-audio-config", "apple-bcm-firmware", "tiny-dfr", "t2fand", kernel, kernel + "-headers"]:
     cmdline.append(pkg)
 if args.verbose:
     print("Running command: " + " ".join(cmdline))
@@ -72,10 +72,6 @@ if not args.dry_run:
     with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
         f.write(
             """
-[Redecorating-t2]
-Server = https://github.com/Redecorating/archlinux-t2-packages/releases/download/packages
-SigLevel = Optional TrustAll
-
 [arch-mact2]
 Server = https://mirror.funami.tech/arch-mact2/os/x86_64
 SigLevel = Never
