@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyleft 2022 Noa Himesaka
+# Copyleft 2022-2024 Noa Himesaka
 
 import argparse
 import sys
@@ -15,15 +15,12 @@ denylist_url = (
 asklist_url = (
     "https://mirror.funami.tech/asklist.json"  # Downloads asklist from this URL
 )
-r = requests.get(kernel_list_url)
-kernel_list = r.json()
+kernel_list = requests.get(kernel_list_url).json()
 kernel_allowlist = kernel_list["accepted_args"]
 # packages we should omit because they are not needed or already will be installed
-r = requests.get(denylist_url)
-denylist = r.json()
+denylist = requests.get(denylist_url).json()
 # packages we should ask the user if they want to install
-r = requests.get(asklist_url)
-asklist = r.json()
+asklist = requests.get(asklist_url).json()
 parser = argparse.ArgumentParser(
     description="t2strap: a pacstrap frontend that makes it easier to install Arch Linux on a Mac with T2 security chip",
     epilog="Available kernels: " + ", ".join(kernel_allowlist),
@@ -38,6 +35,11 @@ parser.add_argument(
     "packages", metavar="package", help="packages to install", nargs="+"
 )
 args = parser.parse_args()
+if args.verbose:
+    print("Kernel list: " + ", ".join(kernel_allowlist))
+    print("Denylist: " + ", ".join(denylist))
+    print("Asklist: " + ", ".join(asklist))
+
 kernel = args.kernel
 if kernel not in kernel_allowlist:
     print("Error: kernel not in allowlist")
@@ -55,20 +57,28 @@ for x in ask:
     ):
         cmdline.append(x)
 cmdline.insert(0, "pacstrap")
-for pkg in ["apple-t2-audio-config", "apple-bcm-firmware", "tiny-dfr", "t2fanrd", kernel, kernel + "-headers"]:
-    cmdline.append(pkg)
+cmdline.extend(
+    [
+        "apple-t2-audio-config",
+        "apple-bcm-firmware",
+        "tiny-dfr",
+        "t2fanrd",
+        kernel,
+        kernel + "-headers",
+    ]
+)
 if args.verbose:
     print("Running command: " + " ".join(cmdline))
-    if args.dry_run:
-        print("Dry run, not actually running command")
-if not args.dry_run:
+if args.dry_run:
+    print("Dry run, not actually running command")
+else:
     subprocess.run(cmdline, shell=False)
 # append t2linux package repositories to pacman.conf
 if args.verbose:
     print("Adding t2linux package repositories to pacman.conf")
-    if args.dry_run:
-        print("Dry run, not actually running command")
-if not args.dry_run:
+if args.dry_run:
+    print("Dry run, not actually running command")
+else:
     with open(cmdline[1] + "/etc/pacman.conf", "a") as f:
         f.write(
             """
