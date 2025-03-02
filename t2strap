@@ -61,7 +61,6 @@ cmdline.extend(
     [
         "apple-t2-audio-config",
         "apple-bcm-firmware",
-        "tiny-dfr",
         "t2fanrd",
         kernel,
         kernel + "-headers",
